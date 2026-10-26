@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Island Drop — Battle Arena</title>
+<style>
+:root{--cyan:#54e7ff;--gold:#ffd46b;--glass:rgba(8,18,31,.78)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07131e;color:#fff;font-family:system-ui,Arial,sans-serif;touch-action:none}
+#game{position:fixed;inset:0;width:100%;height:100%;display:block}
+#vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 40%,rgba(0,0,0,.43) 100%)}
+#hud{position:fixed;inset:0;pointer-events:none}
+.panel{background:linear-gradient(135deg,rgba(5,17,29,.86),rgba(18,40,57,.6));border:1px solid rgba(125,225,255,.32);box-shadow:0 8px 26px #0006,inset 0 0 18px #55dfff0a;backdrop-filter:blur(8px);border-radius:12px}
+#top{position:absolute;left:2%;right:2%;top:2%;display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.brand{padding:9px 14px;font-weight:900;letter-spacing:1.5px;font-size:clamp(13px,2.1vw,22px);color:#fff;text-shadow:0 0 14px #4deaff}
+.brand small{display:block;font-size:9px;letter-spacing:3px;color:var(--cyan)}
+#stats{display:flex;gap:8px}
+.stat{padding:8px 12px;min-width:75px;text-align:center;font-size:clamp(10px,1.4vw,15px);font-weight:800}
+.stat span{display:block;color:var(--gold);font-size:clamp(14px,2vw,22px)}
+#healthbox{position:absolute;left:2%;bottom:4%;width:min(32vw,270px);padding:10px 12px}
+#healthrow{display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-bottom:6px}
+.bar{height:9px;background:#182b39;border-radius:9px;overflow:hidden;border:1px solid #ffffff26}
+#health{height:100%;width:100%;background:linear-gradient(90deg,#24d17c,#b9f66a);box-shadow:0 0 12px #42ff98;transition:width .2s}
+#weapon{position:absolute;right:2%;bottom:4%;padding:10px 14px;text-align:right;min-width:120px}
+#weapon b{display:block;color:var(--gold);font-size:clamp(15px,2vw,24px)}
+#weapon small{color:#b9d5e3;letter-spacing:1px}
+#hint{position:absolute;left:50%;top:15%;transform:translateX(-50%);padding:7px 12px;font-size:clamp(10px,1.3vw,14px);color:#dffaff;text-align:center;white-space:nowrap}
+#crosshair{position:absolute;left:50%;top:50%;width:22px;height:22px;transform:translate(-50%,-50%);opacity:.9}
+#crosshair:before,#crosshair:after{content:"";position:absolute;background:#dffcff;box-shadow:0 0 6px #4deaff}
+#crosshair:before{left:10px;top:0;width:2px;height:22px}#crosshair:after{left:0;top:10px;width:22px;height:2px}
+#joystick{position:absolute;left:3%;bottom:15%;width:clamp(82px,13vw,125px);height:clamp(82px,13vw,125px);border-radius:50%;background:#0a1d2c88;border:2px solid #9cecff70;pointer-events:auto;touch-action:none;box-shadow:inset 0 0 25px #4deaff16}
+#stick{position:absolute;width:42%;height:42%;left:29%;top:29%;border-radius:50%;background:linear-gradient(145deg,#c7f8ff,#47a9c5);border:2px solid #fff9;box-shadow:0 0 18px #42dfff75}
+.action{pointer-events:auto;touch-action:none;position:absolute;border-radius:50%;width:clamp(54px,8vw,82px);height:clamp(54px,8vw,82px);display:grid;place-items:center;font-weight:900;font-size:clamp(10px,1.4vw,14px);letter-spacing:.5px;background:linear-gradient(145deg,#284e63dd,#091725ee);border:2px solid #a4edffad;box-shadow:0 0 18px #4deaff22,inset 0 0 14px #fff1}
+#fire{right:5%;bottom:18%;width:clamp(68px,10vw,100px);height:clamp(68px,10vw,100px);background:linear-gradient(145deg,#ffb34d,#d74b24);border-color:#ffe0a8}
+#jump{right:16%;bottom:11%}#sprint{left:15%;bottom:8%;width:58px;height:58px}
+#menu{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(110deg,rgba(3,11,19,.92),rgba(6,24,35,.55)),radial-gradient(ellipse at 75% 40%,#28667a55,transparent 60%);z-index:5;padding:18px}
+#card{width:min(560px,92vw);padding:clamp(18px,4vw,34px);border:1px solid #69dfff8c;border-radius:20px;background:linear-gradient(135deg,#0a1a29ed,#102d3beb);box-shadow:0 25px 80px #0009}
+.kicker{color:var(--cyan);font-size:11px;font-weight:900;letter-spacing:4px}
+h1{margin:7px 0 4px;font-size:clamp(28px,6vw,52px);line-height:1;font-weight:1000;letter-spacing:1px;text-shadow:0 0 25px #4deaff4a}
+h1 em{font-style:normal;color:var(--gold)}p{color:#c2d6e2;line-height:1.5;font-size:14px}
+#modeRow{display:flex;gap:10px;margin:18px 0}
+.mode{flex:1;border:1px solid #6ca9bd80;border-radius:10px;background:#102638;color:#e8faff;padding:12px 8px;font-weight:900}
+.mode.active{background:linear-gradient(135deg,#14576b,#1c8ba0);border-color:#7df0ff;box-shadow:0 0 18px #43dfff2e}
+#start{width:100%;padding:14px;border:0;border-radius:10px;background:linear-gradient(90deg,#ffb844,#ffe08a);font-size:16px;font-weight:1000;color:#17202a;letter-spacing:1px;box-shadow:0 7px 24px #ffbd4940}
+#foot{font-size:11px;color:#8eafc0;text-align:center;margin-top:13px}
+#toast{position:fixed;left:50%;top:28%;transform:translate(-50%,-50%);font-weight:1000;font-size:clamp(20px,4vw,40px);color:#fff;text-shadow:0 0 20px #ffb64a;pointer-events:none;opacity:0;transition:opacity .15s}
+#rotate{display:none;position:fixed;inset:0;z-index:10;background:#081521;color:#fff;align-items:center;justify-content:center;text-align:center;padding:25px}
+@media (orientation:portrait){#rotate{display:flex}#menu{display:none!important}}
+@media (max-height:420px){.brand{padding:5px 9px}#healthbox,#weapon{bottom:2%;padding:6px 9px}#joystick{bottom:10%}#fire{bottom:11%}#jump{bottom:7%}#sprint{bottom:3%}#hint{top:13%}}
+</style>
+</head>
+<body>
+<canvas id="game"></canvas><div id="vignette"></div>
+<div id="hud">
+ <div id="top"><div class="brand panel">ISLAND DROP <small>BATTLE ARENA • PRE-ALPHA</small></div><div id="stats"><div class="stat panel">ALIVE<span id="alive">12</span></div><div class="stat panel">KILLS<span id="kills">00</span></div><div class="stat panel">ZONE<span id="zone">SAFE</span></div></div></div>
+ <div id="hint" class="panel">MOVE • AIM • SURVIVE</div><div id="crosshair"></div>
+ <div id="healthbox" class="panel"><div id="healthrow"><span>♥ VITALS</span><span id="hptext">100 / 100</span></div><div class="bar"><div id="health"></div></div></div>
+ <div id="weapon" class="panel"><b>AR-07 <span id="ammo">30</span></b><small>ASSAULT RIFLE</small></div>
+ <div id="joystick"><div id="stick"></div></div><button id="sprint" class="action">RUN</button><button id="jump" class="action">JUMP</button><button id="fire" class="action">FIRE</button>
+</div>
+<div id="toast"></div>
+<div id="menu"><div id="card"><div class="kicker">DROP IN • FIGHT • SURVIVE</div><h1>ISLAND <em>DROP</em></h1><p>একটি landscape 16:9 মোবাইল Battle Arena prototype। স্ক্রিন পুরোটা ব্যবহার করবে—গেমে ঢুকলে মেনু বন্ধ হবে, তারপর joystick দিয়ে চলবে এবং FIRE দিয়ে শত্রুকে আক্রমণ করবে।</p><div id="modeRow"><button class="mode active" data-mode="solo">SOLO<br><small>একাই লড়াই</small></button><button class="mode" data-mode="duo">DUO<br><small>AI teammate</small></button></div><button id="start">▶  ENTER BATTLE</button><div id="foot">PROTOTYPE • INTERNET REQUIRED • NOT ONLINE MULTIPLAYER</div></div></div>
+<div id="rotate"><div><div style="font-size:45px">↻</div><h2>ফোনটি আড়াআড়ি (Landscape) করো</h2><p>এই গেমটি 16:9 ফুল-স্ক্রিনের জন্য তৈরি।</p></div></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+(()=> {
+const canvas=document.querySelector('#game');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.6));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x8bd5e7);scene.fog=new THREE.Fog(0x8bd5e7,55,155);
+const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,300);
+scene.add(new THREE.HemisphereLight(0xdaf7ff,0x334a39,2.0));
+const sun=new THREE.DirectionalLight(0xfff1d0,3.0);sun.position.set(-30,50,25);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);scene.add(sun);
+const mat=(c,r=.8,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+const grass=mat(0x4b8e50),sand=mat(0xd7c18b),dark=mat(0x263b48),wall=mat(0xb9b8a7),roof=mat(0x5e5147),leaf=mat(0x246c48),trunk=mat(0x67442b),blue=mat(0x1689b7,.42,.2),skin=mat(0xd99d75),pants=mat(0x263544),gold=mat(0xffc44f,.4,.45),enemyMat=mat(0xa82e35),white=mat(0xf0f4ed);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(190,190),sand);ground.rotation.x=-Math.PI/2;ground.position.y=-.12;ground.receiveShadow=true;scene.add(ground);
+const island=new THREE.Mesh(new THREE.CylinderGeometry(57,65,4,64),grass);island.position.y=-2;island.receiveShadow=true;scene.add(island);
+const water=new THREE.Mesh(new THREE.PlaneGeometry(500,500),mat(0x2388a5,.35,.2));water.rotation.x=-Math.PI/2;water.position.y=-4.2;scene.add(water);
+function box(x,y,z,sx,sy,sz,material,shadow=true){let o=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);o.position.set(x,y,z);o.castShadow=shadow;o.receiveShadow=true;scene.add(o);return o}
+function tree(x,z,s=1){box(x,.7*s,z,.35*s,1.7*s,.35*s,trunk);let a=new THREE.Mesh(new THREE.ConeGeometry(1.15*s,2.3*s,7),leaf);a.position.set(x,2*s,z);a.castShadow=true;scene.add(a);let b=new THREE.Mesh(new THREE.ConeGeometry(.8*s,1.8*s,7),leaf);b.position.set(x,2.9*s,z);scene.add(b)}
+function house(x,z,s=1){box(x,1.2*s,z,5*s,2.4*s,4*s,wall);let r=new THREE.Mesh(new THREE.ConeGeometry(3.9*s,1.8*s,4),roof);r.position.set(x,3*s,z);r.rotation.y=Math.PI/4;scene.add(r);box(x,.65*s,z+2.04*s,1*s,1.3*s,.12, dark)}
+for(let i=0;i<32;i++){let a=i*Math.PI*2/32,r=47+(i%3)*2;tree(Math.cos(a)*r,Math.sin(a)*r,.8+(i%4)*.12)}
+house(-12,-8,1);house(13,-15,.85);house(18,10,.9);house(-22,13,.8);
+for(let i=0;i<22;i++){let x=(Math.random()-.5)*75,z=(Math.random()-.5)*75;if(Math.abs(x)<8&&Math.abs(z)<8)continue;let rock=new THREE.Mesh(new THREE.DodecahedronGeometry(.45+Math.random()*.55,0),mat(0x777e79));rock.position.set(x,.3,z);rock.scale.y=.6;rock.castShadow=true;scene.add(rock)}
+// playable character assembled from detailed primitive meshes
+function makeChar(isEnemy=false,isBuddy=false){
+ const g=new THREE.Group();const bodyMat=isEnemy?enemyMat:(isBuddy?mat(0x32b6a5):blue);
+ const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.43,.72,4,8),bodyMat);torso.position.y=1.25;torso.castShadow=true;g.add(torso);
+ const head=new THREE.Mesh(new THREE.SphereGeometry(.32,16,12),skin);head.position.y=2.05;head.castShadow=true;g.add(head);
+ const helmet=new THREE.Mesh(new THREE.SphereGeometry(.35,16,8,0,Math.PI*2,0,Math.PI/2),isEnemy?enemyMat:gold);helmet.position.y=2.22;g.add(helmet);
+ const vest=new THREE.Mesh(new THREE.BoxGeometry(.72,.52,.49),dark);vest.position.set(0,1.34,.05);g.add(vest);
+ for(let x of [-.23,.23]){let leg=new THREE.Mesh(new THREE.CapsuleGeometry(.16,.55,3,6),pants);leg.position.set(x,.45,0);leg.castShadow=true;g.add(leg)}
+ let gun=new THREE.Mesh(new THREE.BoxGeometry(.16,.15,1.05),dark);gun.position.set(.42,1.38,.58);gun.rotation.x=-.06;g.add(gun);
+ let barrel=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.4,8),dark);barrel.rotation.x=Math.PI/2;barrel.position.set(.42,1.39,1.28);g.add(barrel);
+ const dot=new THREE.Mesh(new THREE.SphereGeometry(.07,8,8),isEnemy?mat(0xff3535):mat(0x60ffce));dot.position.set(0,2.05,.28);g.add(dot);
+ g.userData={hp:100,isEnemy,dead:false,shotCd:0,phase:Math.random()*6};scene.add(g);return g;
+}
+const player=makeChar(false);player.position.set(0,0,8);let buddy=null,enemies=[],bullets=[],kills=0,health=100,ammo=30,mode='solo',playing=false,move={x:0,y:0},look={x:0,y:0},fireHeld=false,jumpV=0,onGround=true;
+function spawnEnemies(){enemies.forEach(e=>scene.remove(e));enemies=[];for(let i=0;i<10;i++){let e=makeChar(true);let a=i/10*Math.PI*2,r=19+Math.random()*16;e.position.set(Math.cos(a)*r,0,Math.sin(a)*r);enemies.push(e)}}
+function reset(){kills=0;health=100;ammo=30;player.position.set(0,0,8);player.rotation.y=0;player.userData.hp=100;if(buddy)scene.remove(buddy);buddy=null;if(mode==='duo'){buddy=makeChar(false,true);buddy.position.set(-3,0,10)}spawnEnemies();updateHud()}
+function updateHud(){document.querySelector('#kills').textContent=String(kills).padStart(2,'0');document.querySelector('#alive').textContent=Math.max(1,enemies.filter(e=>!e.userData.dead).length+1);document.querySelector('#health').style.width=health+'%';document.querySelector('#hptext').textContent=health+' / 100';document.querySelector('#ammo').textContent=ammo}
+function toast(s){let t=document.querySelector('#toast');t.textContent=s;t.style.opacity=1;setTimeout(()=>t.style.opacity=0,700)}
+function shoot(){if(!playing||ammo<=0)return;ammo--;let alive=enemies.filter(e=>!e.userData.dead);if(alive.length){alive.sort((a,b)=>a.position.distanceTo(player.position)-b.position.distanceTo(player.position));let e=alive[0];if(e.position.distanceTo(player.position)<34){e.userData.hp-=34;if(e.userData.hp<=0){e.userData.dead=true;e.visible=false;kills++;toast('ELIMINATION +1')}else toast('HIT!');}}updateHud()}
+document.querySelectorAll('.mode').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.mode;document.querySelectorAll('.mode').forEach(x=>x.classList.toggle('active',x===b))}));
+document.querySelector('#start').addEventListener('click',()=>{playing=true;document.querySelector('#menu').style.display='none';reset();toast('GOOD LUCK!');});
+document.querySelector('#fire').addEventListener('pointerdown',e=>{e.preventDefault();fireHeld=true;shoot()});['pointerup','pointercancel','pointerleave'].forEach(ev=>document.querySelector('#fire').addEventListener(ev,()=>fireHeld=false));
+document.querySelector('#jump').addEventListener('pointerdown',e=>{e.preventDefault();if(onGround){jumpV=7;onGround=false}});
+document.querySelector('#sprint').addEventListener('pointerdown',()=>{move.sprint=true});['pointerup','pointercancel','pointerleave'].forEach(ev=>document.querySelector('#sprint').addEventListener(ev,()=>move.sprint=false));
+const joy=document.querySelector('#joystick'),stick=document.querySelector('#stick');let joyId=null;
+function joyMove(e){let r=joy.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,max=r.width*.31,len=Math.hypot(dx,dy);if(len>max){dx=dx/len*max;dy=dy/len*max}move.x=dx/max;move.y=dy/max;stick.style.transform=`translate(${dx}px,${dy}px)`}
+joy.addEventListener('pointerdown',e=>{joyId=e.pointerId;joy.setPointerCapture(joyId);joyMove(e)});joy.addEventListener('pointermove',e=>{if(e.pointerId===joyId)joyMove(e)});function joyEnd(){joyId=null;move.x=0;move.y=0;stick.style.transform='translate(0,0)'}joy.addEventListener('pointerup',joyEnd);joy.addEventListener('pointercancel',joyEnd);
+let last=performance.now(),fireTimer=0;
+function animate(now){requestAnimationFrame(animate);let dt=Math.min((now-last)/1000,.04);last=now;
+ if(playing){
+   let speed=move.sprint?10:6;let forward=new THREE.Vector3(Math.sin(player.rotation.y),0,Math.cos(player.rotation.y));let right=new THREE.Vector3(forward.z,0,-forward.x);
+   let delta=forward.multiplyScalar(-move.y*speed*dt).add(right.multiplyScalar(move.x*speed*dt));player.position.add(delta);
+   if(Math.hypot(move.x,move.y)>.15)player.rotation.y=Math.atan2(delta.x,delta.z);
+   player.position.x=THREE.MathUtils.clamp(player.position.x,-52,52);player.position.z=THREE.MathUtils.clamp(player.position.z,-52,52);
+   if(!onGround){player.position.y+=jumpV*dt;jumpV-=18*dt;if(player.position.y<=0){player.position.y=0;onGround=true;jumpV=0}}
+   if(fireHeld&&now-fireTimer>260){shoot();fireTimer=now}
+   enemies.forEach(e=>{if(e.userData.dead)return;let d=e.position.distanceTo(player.position);if(d>2.5){let dir=player.position.clone().sub(e.position);dir.y=0;dir.normalize();e.position.addScaledVector(dir,dt*(1.15+(kills*.05)));e.rotation.y=Math.atan2(dir.x,dir.z)}else if(Math.random()<dt*.35){health=Math.max(0,health-3);updateHud();if(health===0){playing=false;document.querySelector('#menu').style.display='flex';document.querySelector('#start').textContent='↻  PLAY AGAIN';toast('YOU WERE ELIMINATED')}}});
+   if(buddy&&enemies.length){let target=enemies.filter(e=>!e.userData.dead).sort((a,b)=>a.position.distanceTo(buddy.position)-b.position.distanceTo(buddy.position))[0];if(target&&target.position.distanceTo(buddy.position)<24&&Math.random()<dt*.7){target.userData.hp-=1.5;if(target.userData.hp<=0){target.userData.dead=true;target.visible=false;kills++;updateHud()}}buddy.position.x=player.position.x-3;buddy.position.z=player.position.z+2;buddy.rotation.y=player.rotation.y}
+   camera.position.set(player.position.x-Math.sin(player.rotation.y)*7,player.position.y+5.2,player.position.z-Math.cos(player.rotation.y)*7);camera.lookAt(player.position.x,player.position.y+1.2,player.position.z+2);
+   document.querySelector('#zone').textContent=player.position.length()>40?'DANGER':'SAFE';
+ }
+ renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+function resize(){renderer.setSize(innerWidth,innerHeight);camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix()}addEventListener('resize',resize);
+})();
+</script>
+</body></html>
